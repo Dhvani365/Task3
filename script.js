@@ -125,117 +125,108 @@ $(document).ready(function() {
   gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
   const sections = gsap.utils.toArray('.section');
-  const totalSections = sections.length;
+    const totalSections = sections.length;
 
-  // Hide all sections except the first one initially
-  gsap.set(sections, { opacity: 0 });
-  gsap.set(sections[0], { opacity: 1 });
+    // Hide all sections except the first one initially
+    gsap.set(sections, { opacity: 0 });
+    gsap.set(sections[0], { opacity: 1 });
 
-  // Function to handle section visibility based on scroll position
-  function updateSectionVisibility() {
-      sections.forEach((section, index) => {
-          const sectionTop = section.offsetTop;
-          const scrollY = window.scrollY || window.pageYOffset;
-          const offset = window.innerHeight * 0.6; // Adjust this offset as needed
+    // Function to handle section visibility based on scroll position
+    function updateSectionVisibility() {
+        sections.forEach((section, index) => {
+            const sectionTop = section.offsetTop;
+            const scrollY = window.scrollY || window.pageYOffset;
+            const offset = window.innerHeight * 0.6; // Adjust this offset as needed
 
-          if (scrollY >= sectionTop - offset && scrollY < sectionTop + section.clientHeight - offset) {
-              gsap.to(section, { opacity: 1, duration: 0.5 });
-          } else {
-              gsap.to(section, { opacity: 0, duration: 0.5 });
-          }
-      });
+            if (scrollY >= sectionTop - offset && scrollY < sectionTop + section.clientHeight - offset) {
+                gsap.to(section, { opacity: 1, duration: 0.5 });
+            } else {
+                gsap.to(section, { opacity: 0, duration: 0.5 });
+            }
+        });
+    }
+
+    // Initial check on page load
+    updateSectionVisibility();
+
+    // Update section visibility on scroll
+    window.addEventListener('scroll', updateSectionVisibility);
+
+    // Smooth scroll for anchor links
+    $('.nav a').click(function(e) {
+        e.preventDefault();
+        const targetId = $(this).attr('href').substring(1);
+        const targetSection = document.getElementById(targetId);
+        gsap.to(window, { scrollTo: { y: targetSection, autoKill: false }, duration: 1 });
+    });
+
+  // Dot animation setup
+  gsap.utils.toArray('.section').forEach((section, index) => {
+    gsap.fromTo(section, {}, {
+      scrollTrigger: {
+        trigger: section,
+        start: 'top center+=100',
+        end: 'bottom center-=100',
+        scrub: true,
+        onEnter: () => updateProgress(index),
+        onEnterBack: () => updateProgress(index)
+      }
+    });
+  });
+
+  // Progress bar and dots animation
+  function updateProgress(index) {
+    const progress = (index + 1) / sectionsData.length;
+    const dashArray = progress * 1000;
+    gsap.to('#Opaque_Ring', { strokeDasharray: `${dashArray}, 1000`, duration: 1 });
+
+    // Update dots color
+    gsap.to(`.dotsfill${index + 1}`, { fill: 'blue', duration: 1 });
+  }
+
+  // Initialize Owl Carousel for smaller screens
+  function initializeOwl() {
+    $(".owl-carousel").owlCarousel({
+      items: 1,
+      loop: true,
+      margin: 10,
+      nav: true,
+      dots: true,
+      responsive: {
+        0: {
+          items: 1
+        },
+        768: {
+          items: 1
+        },
+        1024: {
+          items: 1
+        }
+      }
+    });
+  }
+
+  // Destroy Owl Carousel on larger screens
+  function destroyOwl() {
+    const owl = $(".owl-carousel");
+    owl.trigger('destroy.owl.carousel').removeClass('owl-carousel owl-loaded');
+    owl.find('.owl-stage-outer').children().unwrap();
+  }
+
+  // Check screen size and initialize/destroy Owl Carousel
+  function checkScreenSize() {
+    if (window.innerWidth >= 768) {
+      destroyOwl();
+    } else {
+      initializeOwl();
+    }
   }
 
   // Initial check on page load
-  updateSectionVisibility();
-
-  // Update section visibility on scroll
-  window.addEventListener('scroll', updateSectionVisibility);
-
-  // Smooth scroll for anchor links
-  $('.nav a').click(function(e) {
-      e.preventDefault();
-      const targetId = $(this).attr('href').substring(1);
-      const targetSection = document.getElementById(targetId);
-      gsap.to(window, { scrollTo: { y: targetSection, autoKill: false }, duration: 1 });
-  });
-
-  // Dot animation setup
-  const dots = document.querySelectorAll('.dots-nav path');
-
-  // Initial setup: set all dots to white and hide them
-  TweenMax.set(dots, { fill: 'white', opacity: 1 });
-
-  // Create a timeline to animate dots
-  const dotTimeline = gsap.timeline();
-
-  // Loop through each section to create animations
-  sections.forEach((section, index) => {
-      // Animate dot opacity and fill color as section comes into view
-      dotTimeline.to(dots[index], {
-          opacity: 1,
-          fill: 'blue', // Change dot color to blue
-          duration: 0.3,
-          onEnter: () => {
-              TweenMax.set(dots, { fill: 'white' }); // Reset all dots to white initially
-              dots[index].style.fill = 'blue'; // Set current dot to blue on animation start
-          },
-          onComplete: () => {
-              dots[index].style.fill = 'white'; // Reset dot color to white after animation
-          }
-      });
-
-      // Create ScrollTrigger for each section to trigger dot animation
-      ScrollTrigger.create({
-          trigger: section,
-          start: "top center", // Start animation when section top reaches center of viewport
-          end: "bottom center", // End animation when section bottom reaches center of viewport
-          onEnter: () => dotTimeline.seek(index * 0.3), // Play dot animation on section enter
-          onLeaveBack: () => dotTimeline.seek((index + 1) * 0.3 - 0.01), // Reverse dot animation on section leave
-          markers: false // For debugging, can be removed in production
-      });
-  });
-
-  // Displaying courosol slider
-  // Initialize Owl Carousel for smaller screens
-  const owl = $(".owl-carousel");
-  owl.owlCarousel({
-    items: 1,
-    loop: true,
-    margin: 10,
-    nav: true,
-    dots: true,
-    responsive: {
-      0: {
-        items: 1
-      },
-      768: {
-        items: 1
-      },
-      1024: {
-        items: 1
-      }
-    }
-  });
-
-  // Hide the carousel for larger screens
-  function checkScreenSize() {
-    if (window.innerWidth >= 768) {
-      owl.trigger('destroy.owl.carousel').removeClass('owl-carousel owl-loaded');
-      owl.find('.owl-stage-outer').children().unwrap();
-    } else {
-      owl.addClass('owl-carousel');
-      owl.owlCarousel({
-        items: 1,
-        loop: true,
-        margin: 10,
-        nav: true,
-        dots: true
-      });
-    }
-  }
-
   checkScreenSize();
+  // Check screen size on window resize
   $(window).resize(checkScreenSize);
 
+  // Initial progress update to fill the first dot only
+  updateProgress(0);
 });

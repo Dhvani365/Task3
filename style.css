@@ -2,22 +2,21 @@ body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
+    overflow: auto;
 }
 html{    
+    /* scroll-behavior: smooth; */
     scroll-snap-type: y mandatory; /* Enable vertical snap scrolling */
-    overflow-y: auto; /* Enable vertical scrolling */
+    overflow-y:visible; /* Enable vertical scrolling */
 }
 .section{
-    display: block;
     scroll-snap-align: start;
     scroll-snap-stop: always;
-    opacity: 0; /* Initially hide sections */
-    transition: opacity 0.3s ease, transform 0.3s ease; /* Smooth transition */
-    transform: translateY(100px); /* Start from slightly below */
+    opacity: 1;
 }
 .section1{
     opacity: 1;
-    transform: translateY(0); /* Start from the top */
+    display: block;
 }
 /* Left Column */
 .text-section {
